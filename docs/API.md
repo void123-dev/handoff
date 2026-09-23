@@ -1,4 +1,4 @@
-# HANDOFF-1.1 API
+# HANDOFF-1.2 API
 
 Auxiliary session-junction card. Filter, not an order. Memory is session geometry only.
 
@@ -48,11 +48,14 @@ Demo rows keep `source: "demo"` so a downstream desk does not vote them.
 Flattened numbers at the root (also duplicated on `/api/export` `snapshot` and `card`):
 
 ```text
-lean, awaiting, junction,
+lean, sessionPhase, advice, neutralVotes, insidePrior, volFade,
+awaiting, junction,
 pContinue, pInside, pBrokeHigh, pBrokeLow,
 n, thin, stuck, headline,
 source, venue, symbol
 ```
+
+`sessionPhase` is `awaiting | live | wait_next | resolved`. `advice` is `wait_junction | read_layers | wait_next_session`. `wait_next_session` sets `layersHint` to `junction_wait` (wins over `go_look`).
 
 `pContinue` / `pInside` / `pBrokeHigh` / `pBrokeLow` are JSON numbers, never nested-only.
 
@@ -66,8 +69,8 @@ Sort: live first, then `volumeUsd` desc, then `id`.
 
 ```text
 api: "handoff-export"
-version: "1.1"
-model: "HANDOFF-1.1"
+version: "1.2"
+model: "HANDOFF-1.2"
 readme.lean: "continue | break | unclear. Filter at the junction, not an order."
 snapshot / card: { … }
 ```

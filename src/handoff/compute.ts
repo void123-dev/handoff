@@ -1,13 +1,16 @@
-/** HANDOFF-1.1 snapshot builder: prior session + memory bucket → lean and frequencies. */
+/** HANDOFF-1.2 snapshot builder: prior session + memory bucket → lean, then session phase. */
 import { activeJunction } from "./sessionClock.ts";
 import { rowPressed, selectBucket } from "./memory.ts";
 import { leanRule } from "./lean.ts";
 import { applyOverlay } from "./overlay.ts";
 import { makeHeadlines } from "./headlines.ts";
+import { resolvePhase } from "./phase.ts";
 import { buildArchivePairs, outcomeTick, toMemoryRow } from "./pairs.ts";
+import type { LayerTape } from "./tape.ts";
 import type {
   ArchiveRow,
   DataSource,
+  FlowBar,
   HandoffSnapshot,
   JunctionTick,
   MemoryCard,
@@ -38,6 +41,8 @@ export function computeHandoff(args: {
   symbol: string;
   venue: string;
   source: DataSource;
+  flow?: FlowBar[];
+  layers?: LayerTape;
 }): HandoffSnapshot {
   const clock = activeJunction(args.now);
   const prior = lastCompletedPrior(args.printed, clock.from, args.now);
@@ -99,13 +104,6 @@ export function computeHandoff(args: {
     warning: bucket.thin ? "thin_sample" : null,
   };
 
-  const { headline, headlineRu } = makeHeadlines({
-    lean,
-    junction: clock.junction,
-    stuck,
-    memory,
-  });
-
   const ticks: JunctionTick[] = pool.slice(-24).map((row) => ({
     t: row.t,
     mark: outcomeTick(row),
@@ -116,15 +114,39 @@ export function computeHandoff(args: {
   }));
 
   const thinOrUnclear = lean === "unclear" || memory.thin || memory.n < 40;
+  const phase = resolvePhase({
+    now: args.now,
+    lean,
+    n: memory.n,
+    pInside: memory.pInside,
+    priorHigh: prior?.high ?? null,
+    priorLow: prior?.low ?? null,
+    bars: args.flow,
+    layers: args.layers,
+  });
+  const headlines = makeHeadlines({
+    lean,
+    junction: clock.junction,
+    stuck,
+    memory,
+  });
+  const headline = phase.headline || headlines.headline;
+  const headlineRu = phase.headlineRu || headlines.headlineRu;
 
   return {
-    model: "HANDOFF-1.1",
+    model: "HANDOFF-1.2",
     symbol: args.symbol,
     venue: args.venue,
     lookback: args.lookback,
     source: args.source,
     asOf: args.now,
     lean,
+    sessionPhase: phase.sessionPhase,
+    advice: phase.advice,
+    neutralVotes: phase.neutralVotes,
+    insidePrior: phase.insidePrior,
+    volFade: phase.volFade,
+    cvdFlat: phase.cvdFlat,
     pContinue: memory.pContinue,
     pInside: memory.pInside,
     pBrokeHigh: memory.pBrokeHigh,

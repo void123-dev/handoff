@@ -17,11 +17,17 @@ test("16:00–18:59 ET → ny_to_asia awaiting", () => {
   }
 });
 
-test("19:00 ET is ny_to_asia not awaiting", () => {
+test("19:00 ET is ny_to_asia still awaiting; 21:00 is live", () => {
   const winter1900 = Date.parse("2026-01-16T00:00:00.000Z");
   const { hour } = etParts(winter1900);
   assert.equal(hour, 19);
-  const j = activeJunction(winter1900);
-  assert.equal(j.junction, "ny_to_asia");
-  assert.equal(j.awaiting, false);
+  const open = activeJunction(winter1900);
+  assert.equal(open.junction, "ny_to_asia");
+  assert.equal(open.awaiting, true);
+
+  const winter2100 = Date.parse("2026-01-16T02:00:00.000Z");
+  assert.equal(etParts(winter2100).hour, 21);
+  const live = activeJunction(winter2100);
+  assert.equal(live.junction, "ny_to_asia");
+  assert.equal(live.awaiting, false);
 });

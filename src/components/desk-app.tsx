@@ -238,6 +238,22 @@ function Hero({
 }) {
   const leanLabel =
     snap.lean === "continue" ? t.continue : snap.lean === "break" ? t.break : t.unclear;
+  const phaseLabel =
+    snap.sessionPhase === "wait_next"
+      ? t.phaseWaitNext
+      : snap.sessionPhase === "resolved"
+        ? t.phaseResolved
+        : snap.sessionPhase === "awaiting"
+          ? t.awaiting
+          : t.live;
+  const chip =
+    snap.sessionPhase === "resolved"
+      ? t.chipResolved
+      : snap.advice === "wait_next_session"
+        ? t.chipWaitNext
+        : snap.advice === "read_layers"
+          ? t.chipRead
+          : t.chipWaitOpen;
   return (
     <section className="rounded-xl bg-surface p-5 shadow-[var(--shadow-border)] sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
@@ -251,7 +267,7 @@ function Hero({
         </span>
         <span className="font-mono text-sm text-fg">{junctionArrow(snap.junction)}</span>
         <span className="rounded-full bg-elevated px-3 py-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-          {snap.awaiting ? t.awaiting : t.live}
+          {phaseLabel}
         </span>
         {snap.weekend ? (
           <span className="rounded-full bg-elevated px-3 py-1.5 font-mono text-xs text-muted">
@@ -260,6 +276,14 @@ function Hero({
         ) : null}
       </div>
       <p className="mt-4 text-lg font-medium leading-snug text-balance sm:text-xl">{headline}</p>
+      <p
+        className={cn(
+          "mt-3 font-mono text-sm",
+          snap.sessionPhase === "wait_next" ? "text-unclear" : "text-muted",
+        )}
+      >
+        {chip}
+      </p>
     </section>
   );
 }

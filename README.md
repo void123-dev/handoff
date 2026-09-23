@@ -1,10 +1,11 @@
 # HANDOFF
 
-**HANDOFF-1.1** — previous session → next session. Memory of junctions, not a path forecast.
+**HANDOFF-1.2** — previous session → next session. Memory of junctions, not a path forecast.
 
 A public session-junction card for crypto desks. At Asia / London / NY handoffs it classifies what usually happens next:
 
 - **lean:** `continue` | `break` | `unclear`
+- **sessionPhase:** `awaiting` | `live` | `wait_next` | `resolved`
 - **memory:** historical frequencies for the current bucket (`inside` / `brokeHigh` / `brokeLow`)
 
 It does **not** forecast a path inside New York, and it is **not** an order.
@@ -62,6 +63,9 @@ Full contract: [docs/API.md](docs/API.md)
 | London | 03:00–08:00 |
 | New York | 08:00–16:00 |
 | Wait (NY close) | 16:00–19:00 → junction `ny_to_asia`, `awaiting=true` |
+| Asia open | 19:00–21:00 still `awaiting`. `wait_next` only after 21:00 |
+| London | `awaiting` until 04:00. `wait_next` only after 05:00 |
+| New York | `awaiting` until 10:00. `wait_next` only after 10:00 |
 
 Junctions: `ny_to_asia` · `asia_to_london` · `london_to_ny`
 

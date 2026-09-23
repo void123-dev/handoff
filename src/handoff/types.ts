@@ -2,6 +2,8 @@ import type { Junction, SessionName } from "./sessionClock.ts";
 import type { MemoryKey } from "./memory.ts";
 
 export type Lean = "continue" | "break" | "unclear";
+export type SessionPhase = "awaiting" | "live" | "wait_next" | "resolved";
+export type SessionAdvice = "wait_junction" | "read_layers" | "wait_next_session";
 export type Stretch = "normal" | "extended" | "exhausted";
 export type CloseLoc = "low" | "mid" | "high";
 export type Sweep = "none" | "high" | "low" | "both";
@@ -15,6 +17,17 @@ export type Candle = {
   h: number;
   l: number;
   c: number;
+};
+
+/** 5m bar used only for the neutral-tape check. Delta is signed taker quote when the pit prints it. */
+export type FlowBar = {
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  notional: number;
+  delta?: number;
 };
 
 export type RawSession = {
@@ -96,13 +109,19 @@ export type NeighborBrief = {
 };
 
 export type HandoffSnapshot = {
-  model: "HANDOFF-1.1";
+  model: "HANDOFF-1.2";
   symbol: string;
   venue: string;
   lookback: number;
   source: DataSource;
   asOf: number;
   lean: Lean;
+  sessionPhase: SessionPhase;
+  advice: SessionAdvice;
+  neutralVotes: number;
+  insidePrior: boolean;
+  volFade: boolean;
+  cvdFlat: boolean;
   pContinue: number | null;
   pInside: number | null;
   pBrokeHigh: number | null;

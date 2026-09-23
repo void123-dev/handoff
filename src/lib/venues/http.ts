@@ -4,7 +4,7 @@ export async function fetchJson(url: string, timeoutMs = 8000): Promise<unknown>
   try {
     const res = await fetch(url, {
       signal: ctrl.signal,
-      headers: { Accept: "application/json", "User-Agent": "HANDOFF-1.1" },
+      headers: { Accept: "application/json", "User-Agent": "HANDOFF-1.2" },
     });
     if (!res.ok) throw new Error(`${res.status} ${url}`);
     return await res.json();

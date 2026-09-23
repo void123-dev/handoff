@@ -1,4 +1,4 @@
-import type { Candle } from "@/handoff/types";
+import type { Candle, FlowBar } from "@/handoff/types";
 import type { VenueAdapter } from "./types";
 import { fetchJson, usdtSymbol } from "./http";
 
@@ -55,9 +55,49 @@ async function fetch1h(symbol: string, start: number, end: number): Promise<Cand
   return [];
 }
 
+async function fetch5m(symbol: string, start: number, end: number): Promise<FlowBar[]> {
+  const pair = usdtSymbol(symbol);
+  let lastErr: unknown;
+  for (const host of HOSTS) {
+    try {
+      const out: FlowBar[] = [];
+      let cursor = start;
+      for (let page = 0; page < 7 && cursor < end; page++) {
+        const url = `${host}/api/v3/klines?symbol=${pair}&interval=5m&startTime=${cursor}&endTime=${end}&limit=1000`;
+        const raw = (await fetchJson(url)) as Kline[];
+        if (!Array.isArray(raw) || !raw.length) break;
+        for (const row of raw) {
+          const notional = Number(row[7]);
+          const taker = Number(row[10]);
+          const close = Number(row[4]);
+          out.push({
+            t: Number(row[0]),
+            o: Number(row[1]),
+            h: Number(row[2]),
+            l: Number(row[3]),
+            c: close,
+            notional: Number.isFinite(notional) && notional > 0 ? notional : Number(row[5]) * close,
+            delta: Number.isFinite(notional) && Number.isFinite(taker) ? 2 * taker - notional : undefined,
+          });
+        }
+        const last = Number(raw[raw.length - 1]?.[0]);
+        if (!Number.isFinite(last) || last <= cursor) break;
+        cursor = last + 1;
+        if (raw.length < 1000) break;
+      }
+      if (out.length) return out;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return [];
+}
+
 export const binanceVenue: VenueAdapter = {
   id: "binance",
   label: "Binance",
   volumeUsd: 900_000_000,
   fetch1h,
+  fetch5m,
 };

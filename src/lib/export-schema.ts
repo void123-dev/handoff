@@ -1,7 +1,7 @@
 export const HANDOFF_SCHEMA = {
   api: "handoff-export",
-  version: "1.1",
-  model: "HANDOFF-1.1",
+  version: "1.2",
+  model: "HANDOFF-1.2",
   endpoints: {
     snapshot: "GET /api/handoff?symbol=BTC&venue=okx&lookback=180",
     desk: "GET /api/desk?symbol=BTC&venue=okx&lookback=180",
@@ -26,6 +26,12 @@ export const HANDOFF_SCHEMA = {
       "source",
       "asOf",
       "lean",
+      "sessionPhase",
+      "advice",
+      "neutralVotes",
+      "insidePrior",
+      "volFade",
+      "cvdFlat",
       "pContinue",
       "pInside",
       "pBrokeHigh",
@@ -49,11 +55,13 @@ export const HANDOFF_SCHEMA = {
       "ticks",
     ],
     lean: "continue | break | unclear. Filter at the junction, not an order.",
+    sessionPhase: "awaiting | live | wait_next | resolved. Parallel to lean.",
+    advice: "wait_junction | read_layers | wait_next_session.",
     source: "live | demo. Never a venue id.",
     memory:
       "Empirical next-session range outcome in the current bucket. n<40 → unclear.",
   },
-  csv: "asOf,symbol,venue,lookback,source,lean,junction,awaiting,n,pInside,pBrokeHigh,pBrokeLow,pBoth,pContinue,stretch,closeLoc,stuck,pressedHigh,pressedLow,sweep,weekend,deadZone,thin,headline",
+  csv: "asOf,symbol,venue,lookback,source,lean,sessionPhase,advice,neutralVotes,insidePrior,volFade,junction,awaiting,n,pInside,pBrokeHigh,pBrokeLow,pBoth,pContinue,stretch,closeLoc,stuck,pressedHigh,pressedLow,sweep,weekend,deadZone,thin,headline",
   cors: true,
   auth: "none",
   readme: {
@@ -73,8 +81,13 @@ export function snapshotToCsv(snapshot: {
   symbol: string;
   venue: string;
   lookback: number;
-  source: string;
+  source: "live" | "demo";
   lean: string;
+  sessionPhase: string;
+  advice: string;
+  neutralVotes: number;
+  insidePrior: boolean;
+  volFade: boolean;
   junction: string;
   awaiting: boolean;
   n: number;
@@ -104,6 +117,11 @@ export function snapshotToCsv(snapshot: {
     snapshot.lookback,
     snapshot.source,
     snapshot.lean,
+    snapshot.sessionPhase,
+    snapshot.advice,
+    snapshot.neutralVotes,
+    snapshot.insidePrior,
+    snapshot.volFade,
     snapshot.junction,
     snapshot.awaiting,
     snapshot.n,

@@ -1,4 +1,4 @@
-import type { Candle } from "@/handoff/types";
+import type { Candle, FlowBar } from "@/handoff/types";
 import type { VenueId } from "@/lib/query";
 import { binanceVenue } from "./binance";
 import { bybitVenue } from "./bybit";
@@ -28,6 +28,18 @@ export async function fetchVenueCandles(
   const adapter = registry[venue];
   if (!adapter) throw new Error(`unknown venue ${venue}`);
   const bars = await adapter.fetch1h(symbol, start, end);
+  return [...bars].sort((a, b) => a.t - b.t);
+}
+
+export async function fetchVenueFlow(
+  venue: VenueId,
+  symbol: string,
+  start: number,
+  end: number,
+): Promise<FlowBar[]> {
+  const adapter = registry[venue];
+  if (!adapter) throw new Error(`unknown venue ${venue}`);
+  const bars = await adapter.fetch5m(symbol, start, end);
   return [...bars].sort((a, b) => a.t - b.t);
 }
 

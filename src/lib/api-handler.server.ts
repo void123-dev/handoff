@@ -26,8 +26,8 @@ export async function handleExport(request: Request): Promise<Response> {
   }
   return corsJson({
     api: "handoff-export",
-    version: "1.1",
-    model: "HANDOFF-1.1",
+    version: "1.2",
+    model: "HANDOFF-1.2",
     readme: EXPORT_README,
     query: resolved,
     snapshot: bundle.snapshot,
